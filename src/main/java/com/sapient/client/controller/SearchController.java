@@ -2,6 +2,8 @@ package com.sapient.client.controller;
 
 import java.util.concurrent.ExecutionException;
 
+import com.sapient.model.SearchRequest;
+import com.sapient.model.SearchResponse;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.header.internals.RecordHeader;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,23 +20,23 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping(value = "/kafka")
+@RequestMapping
 public class SearchController {
 	
 	@Autowired
-	private ReplyingKafkaTemplate<String, String,String> kafkaTemplate;
+	private ReplyingKafkaTemplate<String, SearchRequest,SearchResponse> kafkaTemplate;
 	
 	//private KafkaTemplate<String, Object> temp;
 
-	@PostMapping(value = "/publish")
-	public String sendMessageToKafkaTopic(@RequestParam("message") String message) throws InterruptedException, ExecutionException {
+	@PostMapping(value = "/search")
+	public SearchResponse search(@RequestParam("message") SearchRequest searchRequest) throws InterruptedException, ExecutionException {
 		
 		// create producer record
-		ProducerRecord<String, String> record = new ProducerRecord<String, String>("samtest", message);
+		ProducerRecord<String, SearchRequest> record = new ProducerRecord<String, SearchRequest>("search-movie-request", searchRequest);
 		// set reply topic in header
-		record.headers().add(new RecordHeader(KafkaHeaders.REPLY_TOPIC, "repsamtest".getBytes()));
+		record.headers().add(new RecordHeader(KafkaHeaders.REPLY_TOPIC, "search-movie-response".getBytes()));
 		// post in kafka topic
-		RequestReplyFuture<String, String, String> sendAndReceive = kafkaTemplate.sendAndReceive(record);
+		RequestReplyFuture<String, SearchRequest, SearchResponse> sendAndReceive = kafkaTemplate.sendAndReceive(record);
 		return sendAndReceive.get().value();
 		 
 		//temp.send("samtest", message);

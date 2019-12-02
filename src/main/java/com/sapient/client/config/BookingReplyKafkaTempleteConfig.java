@@ -1,5 +1,6 @@
 package com.sapient.client.config;
 
+import com.sapient.dto.MovieDTO;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
@@ -16,7 +17,7 @@ import org.springframework.kafka.requestreply.ReplyingKafkaTemplate;
 public class BookingReplyKafkaTempleteConfig {
 
 	@Bean
-	public ReplyingKafkaTemplate<String, String, String> replyKafkaTemplate(ProducerFactory<String, String> pf,
+	public ReplyingKafkaTemplate<String, MovieDTO, String> replyKafkaTemplate(ProducerFactory<String, MovieDTO> pf,
 			KafkaMessageListenerContainer<String, String> container) {
 		return new ReplyingKafkaTemplate<>(pf, container);
 
@@ -24,18 +25,18 @@ public class BookingReplyKafkaTempleteConfig {
 
 	@Bean
 	public KafkaMessageListenerContainer<String, String> replyContainer(ConsumerFactory<String, String> cf) {
-		ContainerProperties containerProperties = new ContainerProperties("repsamtest");
+		ContainerProperties containerProperties = new ContainerProperties("new-booking-response");
 		return new KafkaMessageListenerContainer<>(cf, containerProperties);
 	}
 	
 	 @Bean
-	  public KafkaTemplate<String, String> kafkaTemplate(ProducerFactory<String, String> pf) {
+	  public KafkaTemplate<String, MovieDTO> kafkaTemplate(ProducerFactory<String, MovieDTO> pf) {
 	    return new KafkaTemplate<>(pf);
 	  }
 	 
 	 @Bean
 	  public KafkaListenerContainerFactory<ConcurrentMessageListenerContainer<String, String>> kafkaListenerContainerFactory(
-			  ConsumerFactory<String, String> cf,ProducerFactory<String, String> pf) {
+			  ConsumerFactory<String, String> cf,ProducerFactory<String, MovieDTO> pf) {
 	    ConcurrentKafkaListenerContainerFactory<String, String> factory = new ConcurrentKafkaListenerContainerFactory<>();
 	    factory.setConsumerFactory(cf);
 	    factory.setReplyTemplate(kafkaTemplate(pf));

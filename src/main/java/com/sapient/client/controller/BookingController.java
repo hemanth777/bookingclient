@@ -2,6 +2,7 @@ package com.sapient.client.controller;
 
 import java.util.concurrent.ExecutionException;
 
+import com.sapient.model.BookingRequest;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.header.internals.RecordHeader;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,21 +13,18 @@ import org.springframework.kafka.listener.KafkaMessageListenerContainer;
 import org.springframework.kafka.requestreply.ReplyingKafkaTemplate;
 import org.springframework.kafka.requestreply.RequestReplyFuture;
 import org.springframework.kafka.support.KafkaHeaders;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping(value = "/kafka")
+@RequestMapping
 public class BookingController {
 	
 	@Autowired
-	private ReplyingKafkaTemplate<String, String,String> kafkaTemplate;
+	private ReplyingKafkaTemplate<String, BookingRequest,String> kafkaTemplate;
 	
 	//private KafkaTemplate<String, Object> temp;
 
-	@PostMapping(value = "/publish")
+	/*@PostMapping(value = "/publish")
 	public String sendMessageToKafkaTopic(@RequestParam("message") String message) throws InterruptedException, ExecutionException {
 		
 		// create producer record
@@ -41,5 +39,16 @@ public class BookingController {
 		
 		//return "";
 		
+	}*/
+
+	@PostMapping(value = "bookmovie")
+	public String newBooking(@RequestBody BookingRequest bookingRequest) throws ExecutionException, InterruptedException {
+		// create producer record
+		ProducerRecord<String, BookingRequest> record = new ProducerRecord<String, BookingRequest>("new-booking-request", bookingRequest);
+		// set reply topic in header
+		record.headers().add(new RecordHeader(KafkaHeaders.REPLY_TOPIC, "new-booking-response".getBytes()));
+		// post in kafka topic
+		RequestReplyFuture<String, BookingRequest, String> sendAndReceive = kafkaTemplate.sendAndReceive(record);
+		return sendAndReceive.get().value();
 	}
 }

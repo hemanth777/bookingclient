@@ -1,5 +1,6 @@
 package com.sapient.client.config;
 
+import com.sapient.response.SearchResponse;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
@@ -16,15 +17,15 @@ import org.springframework.kafka.requestreply.ReplyingKafkaTemplate;
 public class SearchReplyKafkaTempleteConfig {
 
 	@Bean
-	public ReplyingKafkaTemplate<String, String, String> replyKafkaTemplate(ProducerFactory<String, String> pf,
-			KafkaMessageListenerContainer<String, String> container) {
+	public ReplyingKafkaTemplate<String, String, SearchResponse> replyKafkaTemplate(ProducerFactory<String, String> pf,
+			KafkaMessageListenerContainer<String, SearchResponse> container) {
 		return new ReplyingKafkaTemplate<>(pf, container);
 
 	}
 
 	@Bean
-	public KafkaMessageListenerContainer<String, String> replyContainer(ConsumerFactory<String, String> cf) {
-		ContainerProperties containerProperties = new ContainerProperties("repsamtest");
+	public KafkaMessageListenerContainer<String, SearchResponse> replyContainer(ConsumerFactory<String, SearchResponse> cf) {
+		ContainerProperties containerProperties = new ContainerProperties("search-movie-response");
 		return new KafkaMessageListenerContainer<>(cf, containerProperties);
 	}
 	
@@ -34,9 +35,9 @@ public class SearchReplyKafkaTempleteConfig {
 	  }
 	 
 	 @Bean
-	  public KafkaListenerContainerFactory<ConcurrentMessageListenerContainer<String, String>> kafkaListenerContainerFactory(
-			  ConsumerFactory<String, String> cf,ProducerFactory<String, String> pf) {
-	    ConcurrentKafkaListenerContainerFactory<String, String> factory = new ConcurrentKafkaListenerContainerFactory<>();
+	  public KafkaListenerContainerFactory<ConcurrentMessageListenerContainer<String, SearchResponse>> kafkaListenerContainerFactory(
+			  ConsumerFactory<String, SearchResponse> cf,ProducerFactory<String, String> pf) {
+	    ConcurrentKafkaListenerContainerFactory<String, SearchResponse> factory = new ConcurrentKafkaListenerContainerFactory<>();
 	    factory.setConsumerFactory(cf);
 	    factory.setReplyTemplate(kafkaTemplate(pf));
 	    return factory;
